@@ -1,5 +1,5 @@
 # builder
-FROM golang:1.17 AS builder
+FROM golang:1.16 AS builder
 COPY go.mod /src/
 COPY go.sum /src/
 RUN cd /src && go mod download
