@@ -1,15 +1,13 @@
+version: "2"
 
-# ***** Replace ALL <YOUR_DOMAIN> to you really domain *****
-
-version: "3"
 services:
   web:
-    image: ineva/ipa-server:latest
+    build: .
     container_name: ipa-server
     restart: unless-stopped
     environment:
       # server public url
-      - PUBLIC_URL=http://ipa-server-long.herokuapp.com/
+      - PUBLIC_URL=
       # option, remote storager config, s3://ENDPOINT:AK:SK:BUCKET, alioss://ENDPOINT:AK:SK:BUCKET, qiniu://[ZONE]:AK:SK:BUCKET
       - REMOTE=
       # option, remote storager public url, https://cdn.example.com
@@ -17,19 +15,8 @@ services:
       # option, metadata storage path, use random secret path to keep your metadata safer in case of remote storage
       - META_PATH=appList.json
       # delete app enabled, true/false
-      - DELETE_ENABLED="false"
+      - DELETE_ENABLED=false
+    ports:
+      - "9008:8080"
     volumes:
       - "/docker/data/ipa-server:/app/upload"
-  caddy:
-    image: ineva/caddy:2.4.1
-    restart: unless-stopped
-    ports:
-      - 80:80
-      - 443:443
-    entrypoint: |
-      sh -c 'echo "$$CADDY_CONFIG" > /srv/Caddyfile && /usr/bin/caddy run --config /srv/Caddyfile'
-    environment:
-      CADDY_CONFIG: |
-        ipa-server-long.herokuapp.com {
-          reverse_proxy web:8080
-        }
