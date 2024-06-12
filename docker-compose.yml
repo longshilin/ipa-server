@@ -5,8 +5,8 @@ services:
     container_name: ipa-server
     restart: unless-stopped
     environment:
-      # server public url
-      - PUBLIC_URL=https://ipa.longshilin.com
+      # server public url   https://ipa.longshilin.com
+      - PUBLIC_URL=
       # option, remote storager config, s3://ENDPOINT:AK:SK:BUCKET, alioss://ENDPOINT:AK:SK:BUCKET, qiniu://[ZONE]:AK:SK:BUCKET
       - REMOTE=
       # option, remote storager public url, https://cdn.example.com
@@ -14,21 +14,24 @@ services:
       # option, metadata storage path, use random secret path to keep your metadata safer in case of remote storage
       - META_PATH=appList.json
       # delete app enabled, true/false
-      - DELETE_ENABLED="false"
-    ports:
-      - "9008:8080"
+      - DELETE_ENABLED="true"
+#    ports:
+#      - 8080:8080
     volumes:
-      - "/docker/data/ipa-server:/app/upload"
+      - "./data/upload:/app/upload"
   caddy:
     image: ineva/caddy:2.4.1
+    container_name: ipa-server-caddy
     restart: unless-stopped
     ports:
-      - 80:80
-      - 443:443
+      - 9082:443
     entrypoint: |
       sh -c 'echo "$$CADDY_CONFIG" > /srv/Caddyfile && /usr/bin/caddy run --config /srv/Caddyfile'
     environment:
       CADDY_CONFIG: |
-        ipa.longshilin.com {
-          reverse_proxy web:9008
+        macmini.longshilin.com {
+          reverse_proxy web:8080
+          tls /srv/certs/macmini.longshilin.com_public.crt /srv/certs/macmini.longshilin.com.key
         }
+    volumes:
+      - ../ssl:/srv/certs
